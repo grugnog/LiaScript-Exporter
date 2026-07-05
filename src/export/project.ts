@@ -4,6 +4,9 @@ import * as IMS from './ims'
 import * as SCORM12 from './scorm12'
 import * as SCORM2004 from './scorm2004'
 import * as ANDROID from './android'
+import * as EPUB from './epub'
+import * as DOCX from './docx'
+import * as XAPI from './xapi'
 import * as RDF from './rdf'
 import * as COLOR from '../colorize'
 
@@ -123,6 +126,26 @@ export function help() {
   )
   COLOR.command(
     null,
+    '--project-generate-android',
+    'Android APKs and pass additional android settings.',
+  )
+  COLOR.command(
+    null,
+    '--project-generate-epub',
+    '   EPUBs are automatically generated and added to every card.',
+  )
+  COLOR.command(
+    null,
+    '--project-generate-docx',
+    '   DOCX documents are automatically generated and added to every card.',
+  )
+  COLOR.command(
+    null,
+    '--project-generate-xapi',
+    '   xAPI packages and pass additional xAPI settings.',
+  )
+  COLOR.command(
+    null,
     '--project-generate-cache',
     '  Only generate new files, if they do not exist.',
   )
@@ -150,6 +173,9 @@ export interface ProjectExportArguments {
   'project-generate-scorm12'?: boolean
   'project-generate-scorm2004'?: boolean
   'project-generate-android'?: boolean
+  'project-generate-epub'?: boolean
+  'project-generate-docx'?: boolean
+  'project-generate-xapi'?: boolean
   'project-generate-cache'?: boolean
   'project-search'?: boolean
 }
@@ -933,6 +959,12 @@ async function toCard(
     downloads['scorm12'] = 'assets/scorm12/' + backupOutput + '.zip'
   if (argument['project-generate-scorm2004'])
     downloads['scorm2004'] = 'assets/scorm2004/' + backupOutput + '.zip'
+  if (argument['project-generate-epub'])
+    downloads['epub'] = 'assets/epub/' + backupOutput + '.epub'
+  if (argument['project-generate-docx'])
+    downloads['docx'] = 'assets/docx/' + backupOutput + '.docx'
+  if (argument['project-generate-xapi'])
+    downloads['xapi'] = 'assets/xapi/' + backupOutput + '.zip'
 
   if (argument['project-generate-pdf']) {
     argument.input = course.data.lia.readme
@@ -956,20 +988,67 @@ async function toCard(
     }
   }
 
+  if (argument['project-generate-epub']) {
+    argument.input = course.data.lia.readme
+    argument.output = 'assets/epub/' + backupOutput
+
+    const file = argument.output + '.epub'
+
+    if (
+      argument['project-generate-cache'] &&
+      fs.existsSync(path.join(process.cwd(), file))
+    ) {
+      console.log('using cached file of ', argument.input, ' -> ', file)
+    } else {
+      console.log('generate epub of', argument.input, ' -> ', file)
+
+      fs.ensureDirSync('assets/epub')
+      await EPUB.exporter(argument, course.data)
+    }
+  }
+
+  if (argument['project-generate-docx']) {
+    argument.input = course.data.lia.readme
+    argument.output = 'assets/docx/' + backupOutput
+
+    const file = argument.output + '.docx'
+
+    if (
+      argument['project-generate-cache'] &&
+      fs.existsSync(path.join(process.cwd(), file))
+    ) {
+      console.log('using cached file of ', argument.input, ' -> ', file)
+    } else {
+      console.log('generate docx of', argument.input, ' -> ', file)
+
+      fs.ensureDirSync('assets/docx')
+      await DOCX.exporter(argument)
+    }
+  }
+
   let repo
   if (
     argument['project-generate-ims'] ||
     argument['project-generate-scorm12'] ||
     argument['project-generate-scorm2004'] ||
-    argument['project-generate-android']
+    argument['project-generate-android'] ||
+    argument['project-generate-xapi']
   ) {
     repo = helper.getRepository(course.url)
 
     if (repo) {
       execSync(repo.cmd)
       argument.input = path.join('tmp', repo.path)
-      argument.path = 'tmp'
-      argument.readme = path.join('./', repo.path)
+
+      if (course.path) {
+        // restrict packing to the sub-folder given in the yaml, instead of
+        // the whole cloned repository
+        argument.path = path.join('tmp', course.path)
+        argument.readme = path.relative(course.path, repo.path)
+      } else {
+        argument.path = 'tmp'
+        argument.readme = path.join('./', repo.path)
+      }
 
       argument.output = backupOutput
 
@@ -1051,6 +1130,24 @@ async function toCard(
     }
   }
 
+  // xAPI
+  if (repo && argument['project-generate-xapi']) {
+    argument.output = 'assets/xapi/' + backupOutput
+    argument['xapi-zip'] = true
+    const asset = argument.output + '.zip'
+
+    fs.ensureDirSync('assets/xapi')
+
+    if (
+      argument['project-generate-cache'] &&
+      fs.existsSync(path.join(process.cwd(), asset))
+    ) {
+      console.log('using cached file of ', argument.input, ' -> ', asset)
+    } else {
+      await XAPI.exporter(argument, course.data)
+    }
+  }
+
   // clean up
   if (repo) {
     execSync('rm -rf tmp')
@@ -1087,6 +1184,9 @@ function card(
     scorm2004?: string
     ims?: string
     apk?: string
+    epub?: string
+    docx?: string
+    xapi?: string
   },
   img_url?: string,
   link?: string,
@@ -1173,6 +1273,27 @@ function card(
                 '">Android APK</a></li>'
               : ''
           }
+      ${
+        download.epub
+          ? '<li><a class="dropdown-item btn-sm" href="' +
+            download.epub +
+            '">EPUB</a></li>'
+          : ''
+      }
+      ${
+        download.docx
+          ? '<li><a class="dropdown-item btn-sm" href="' +
+            download.docx +
+            '">DOCX</a></li>'
+          : ''
+      }
+      ${
+        download.xapi
+          ? '<li><a class="dropdown-item btn-sm" href="' +
+            download.xapi +
+            '">xAPI Package</a></li>'
+          : ''
+      }
       </ul>
       </div>
       </div>

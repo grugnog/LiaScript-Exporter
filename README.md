@@ -824,6 +824,13 @@ collection:
     # or leave, so that no card-image is added to your preview-cards
     # logo: 
 
+    # By default, formats that require the repository to be cloned (SCORM12/2004,
+    # IMS, Android, xAPI - see --project-generate-* below) pack the entire cloned
+    # repository. If your course only occupies a sub-folder of the repository,
+    # set `path` to restrict packing to that folder, just like the `-p/--path`
+    # command line option does for single-file exports.
+    # path: some/sub-folder
+
     # You can manually tag courses, if this has not been done within the main comment of the course.
     # By default, these tags will be treated as categories, which can be used to navigate through
     # your courses. To disable this, use the cmd-param --project-no-categories

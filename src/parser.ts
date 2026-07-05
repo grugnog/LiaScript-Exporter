@@ -158,6 +158,9 @@ export function parseArguments(): Arguments {
     'project-generate-scorm12': argv['project-generate-scorm12'],
     'project-generate-scorm2004': argv['project-generate-scorm2004'],
     'project-generate-android': argv['project-generate-android'],
+    'project-generate-epub': argv['project-generate-epub'],
+    'project-generate-docx': argv['project-generate-docx'],
+    'project-generate-xapi': argv['project-generate-xapi'],
     'project-generate-cache': argv['project-generate-cache'],
 
     // RDF settings
@@ -307,6 +310,9 @@ export function parsePresetsArguments(presetId: string): Arguments {
     'project-generate-scorm12': argv['project-generate-scorm12'],
     'project-generate-scorm2004': argv['project-generate-scorm2004'],
     'project-generate-android': argv['project-generate-android'],
+    'project-generate-epub': argv['project-generate-epub'],
+    'project-generate-docx': argv['project-generate-docx'],
+    'project-generate-xapi': argv['project-generate-xapi'],
     'project-generate-cache': argv['project-generate-cache'],
 
     // RDF settings
