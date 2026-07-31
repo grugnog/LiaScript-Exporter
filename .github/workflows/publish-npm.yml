@@ -25,7 +25,7 @@ jobs:
                   registry-url: "https://registry.npmjs.org"
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --allow-git=all
 
             - name: Set ELM_HOME
               run: echo "ELM_HOME=${GITHUB_WORKSPACE}/.elm" >> $GITHUB_ENV
@@ -38,7 +38,7 @@ jobs:
             - name: Build LiaScript prebuild and apply Elm patches
               run: |
                 cd LiaScript
-                npm install
+                npm install --allow-git=all
                 npm run prebuild
                 make -C patches/elm-patch ELM_HOME=${ELM_HOME} || echo "Patches already applied or skipped"
                 rm -rf elm-stuff .parcel-cache
