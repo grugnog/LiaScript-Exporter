@@ -231,7 +231,15 @@ export async function exporter(argument: EpubExportArguments, json: any) {
     })
 
     argument['epub-title'] = argument['epub-title'] || json.lia.str_title
-    argument['epub-cover'] = argument['epub-cover'] || json.lia.definition.logo
+    let logo = json.lia.definition.logo
+    if (logo && !helper.isURL(logo) && helper.isURL(argument.input)) {
+      // Resolve relative logo paths (e.g. 'assets/images/logo.png') against
+      // the course's base URL, since the epub library treats non-'http'
+      // cover values as local filesystem paths and would otherwise fail
+      // with ENOENT.
+      logo = new URL(logo, argument.input).href
+    }
+    argument['epub-cover'] = argument['epub-cover'] || logo
     argument['epub-author'] = argument['epub-author'] || json.lia.definition.author
     argument['epub-language'] = argument['epub-language'] || json.lia.definition.language
     argument['epub-description'] = argument['epub-description'] || json.lia.definition.comment
