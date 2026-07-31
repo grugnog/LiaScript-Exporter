@@ -77,7 +77,7 @@ RUN mkdir -p dist/capacitor-cache && \
     cd dist/capacitor-cache && \
     echo '{"dependencies":{"@capacitor/cli":"^8.0.0","@capacitor-community/text-to-speech":"git+https://github.com/capacitor-community/text-to-speech.git#v8.0.0","@capacitor/android":"^8.0.0","@capacitor/assets":"^3.0.5","@capacitor/core":"^8.0.0"}}' > package.json && \
     npm install && \
-    echo "import type { CapacitorConfig } from '@capacitor/cli'; const config: CapacitorConfig = { appId: 'io.liascript.course', appName: 'App', webDir: 'www' }; export default config;" > capacitor.config.ts && \
+    echo '{"appId":"io.liascript.course","appName":"App","webDir":"www"}' > capacitor.config.json && \
     mkdir -p www && \
     cp -r ../assets/capacitor/* www/ && \
     cp -r ../assets/common/* www/ && \
@@ -85,7 +85,7 @@ RUN mkdir -p dist/capacitor-cache && \
     cd android && \
     ./gradlew assembleDebug && \
     cd .. && \
-    rm -rf www android capacitor.config.ts
+    rm -rf www android capacitor.config.json
 
 # Install Puppeteer's Chrome explicitly
 RUN npx puppeteer browsers install chrome

@@ -168,25 +168,25 @@ export async function exporter(argument: AndroidExportArguments, json: any) {
   }
 
   await helper.writeFile(
-    path.join(tmp, 'capacitor.config.ts'),
-    `import { CapacitorConfig } from '@capacitor/cli'
-
-const config: CapacitorConfig = {
-  appId: "${argument['android-appId']}",
-  appName: "${argument['android-appName'] || json.lia.str_title}",
-  webDir: 'www',
-  server: { androidScheme: 'http' },
-  plugins: {
-    SystemBars: {
-      insetsHandling: 'css',
-      style: 'light',
-      overlaysWebView: true,
-      backgroundColor: '#00000000',
-    },
-  },
-}
-
-export default config`,
+    path.join(tmp, 'capacitor.config.json'),
+    JSON.stringify(
+      {
+        appId: argument['android-appId'],
+        appName: argument['android-appName'] || json.lia.str_title,
+        webDir: 'www',
+        server: { androidScheme: 'http' },
+        plugins: {
+          SystemBars: {
+            insetsHandling: 'css',
+            style: 'light',
+            overlaysWebView: true,
+            backgroundColor: '#00000000',
+          },
+        },
+      },
+      null,
+      2,
+    ),
   )
 
   let index = fs.readFileSync(path.join(tmp, 'www/index.html'), 'utf8')
@@ -400,7 +400,10 @@ function execute(cmds: string[], cwd: string, callback: () => void) {
       { cwd: cwd },
       async (error: Error | null, stdout: string, stderr: string) => {
         if (error) {
-          console.error(`❌ Command failed: ${error.message}`)
+          console.error(`❌ Command failed: ${cmd}`)
+          console.error(`error: ${error.message}`)
+          if (stdout) console.error(`stdout: ${stdout}`)
+          if (stderr) console.error(`stderr: ${stderr}`)
           return
         }
         if (stderr && !cmd.includes('gradlew')) {
